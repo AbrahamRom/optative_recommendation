@@ -34,7 +34,7 @@ class ElectiveRecommendationAPI:
             ["EstudianteID", "Nombre", "Tags", "Descripcion"],
             [estudiante_id, nombre, tags, descripcion],
         )
-        self.recalculate_student_tags(estudiante_id)
+        self.recalculate_student_data(estudiante_id)
         return estudiante_id
 
     def edit_student(self, estudiante_id, nombre=None, tags=None, descripcion=None):
@@ -49,7 +49,7 @@ class ElectiveRecommendationAPI:
             tags=tags,
             descripcion=descripcion,
         )
-        self.recalculate_student_tags(estudiante_id)
+        self.recalculate_student_data(estudiante_id)
         return True
 
     def get_student(self, estudiante_id):
@@ -69,7 +69,7 @@ class ElectiveRecommendationAPI:
             ["CursoID", "Nombre", "Descripcion"],
             [curso_id, nombre, descripcion],
         )
-        self.recalculate_course_tags(curso_id)
+        self.recalculate_course_data(curso_id)
         return curso_id
 
     def edit_course(self, curso_id, nombre=None, descripcion=None):
@@ -84,7 +84,7 @@ class ElectiveRecommendationAPI:
             descripcion=descripcion,
         )
 
-        self.recalculate_course_tags(curso_id)
+        self.recalculate_course_data(curso_id)
 
         return True
 
@@ -102,7 +102,7 @@ class ElectiveRecommendationAPI:
         """Devuelve la lista de tags predefinidos cargados desde predefined_tags.py."""
         return self.predefined_tags
 
-    def recalculate_course_tags(self, curso_id):
+    def recalculate_course_data(self, curso_id):
         """
         Recalcula y actualiza los tags del curso con el ID dado en courses_with_tags.csv
         después de registrar o editar un curso.
@@ -143,9 +143,27 @@ class ElectiveRecommendationAPI:
             n_max=5,
             csv_path=courses_with_tags_csv,
         )
+        # Actualizar los embeddings de tags si es necesario
+        embeddings_path = os.path.join(self.data_path, "courses_tags_embeddings.pkl")
+        # Importar embeddings dinámicamente
+        embeddings_path_module = os.path.join(
+            os.path.dirname(base_dir), "src", "embeddings.py"
+        )
+        spec_emb = importlib.util.spec_from_file_location(
+            "embeddings", embeddings_path_module
+        )
+        embeddings = importlib.util.module_from_spec(spec_emb)
+        sys.modules["embeddings"] = embeddings
+        spec_emb.loader.exec_module(embeddings)
+        # Cargar el df actualizado de tags
+        import pandas as pd
+
+        df_tags = pd.read_csv(courses_with_tags_csv)
+        # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
+
         return True
 
-    def recalculate_student_tags(self, estudiante_id):
+    def recalculate_student_data(self, estudiante_id):
         """
         Recalcula y actualiza los tags del estudiante con el ID dado en students_with_tags.csv
         después de registrar o editar un estudiante.
@@ -189,7 +207,75 @@ class ElectiveRecommendationAPI:
             n_max=5,
             csv_path=students_with_tags_csv,
         )
+        # Actualizar los embeddings de tags si es necesario
+        embeddings_path = os.path.join(self.data_path, "students_tags_embeddings.pkl")
+        embeddings_path_module = os.path.join(
+            os.path.dirname(base_dir), "src", "embeddings.py"
+        )
+        spec_emb = importlib.util.spec_from_file_location(
+            "embeddings", embeddings_path_module
+        )
+        embeddings = importlib.util.module_from_spec(spec_emb)
+        sys.modules["embeddings"] = embeddings
+        spec_emb.loader.exec_module(embeddings)
+        import pandas as pd
+
+        df_tags = pd.read_csv(students_with_tags_csv)
+        # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
+
         return True
+
+    def recomendar_top_cursos_para_estudiante(self, estudiante_id, top_n=3):
+        """
+        Devuelve el ranking top_n de cursos recomendados para un estudiante dado su ID,
+        usando los embeddings y la similitud coseno.
+        """
+        import importlib.util
+        import sys
+        import os
+
+        # Cargar funciones de embeddings y similarity dinámicamente
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        embeddings_path = os.path.join(base_dir, "embeddings.py")
+        similarity_path = os.path.join(base_dir, "similarity.py")
+        recommender_path = os.path.join(base_dir, "recommender.py")
+
+        # embeddings.cargar_embeddings_tags_df
+        spec_emb = importlib.util.spec_from_file_location("embeddings", embeddings_path)
+        embeddings = importlib.util.module_from_spec(spec_emb)
+        sys.modules["embeddings"] = embeddings
+        spec_emb.loader.exec_module(embeddings)
+
+        # similarity.similitud_estudiante_con_todos_los_cursos
+        spec_sim = importlib.util.spec_from_file_location("similarity", similarity_path)
+        similarity = importlib.util.module_from_spec(spec_sim)
+        sys.modules["similarity"] = similarity
+        spec_sim.loader.exec_module(similarity)
+
+        # recommender.ranking_top_cursos_por_similitud
+        spec_rec = importlib.util.spec_from_file_location(
+            "recommender", recommender_path
+        )
+        recommender = importlib.util.module_from_spec(spec_rec)
+        sys.modules["recommender"] = recommender
+        spec_rec.loader.exec_module(recommender)
+
+        # Cargar embeddings de estudiantes y cursos
+        students_emb_path = os.path.join(self.data_path, "students_tags_embeddings.pkl")
+        courses_emb_path = os.path.join(self.data_path, "courses_tags_embeddings.pkl")
+        df_est = embeddings.cargar_embeddings_tags_df(students_emb_path)
+        df_cursos = embeddings.cargar_embeddings_tags_df(courses_emb_path)
+        if df_est is None or df_cursos is None:
+            raise ValueError(
+                "No se encontraron los embeddings de estudiantes o cursos."
+            )
+        # Calcular similitud
+        df_sim = similarity.similitud_estudiante_con_todos_los_cursos(
+            df_est, df_cursos, estudiante_id
+        )
+        # Ranking top N
+        ranking = recommender.ranking_top_cursos_por_similitud(df_sim, top_n=top_n)
+        return ranking
 
     # --- Métodos auxiliares internos ---
     def _get_next_id(self, file_path, id_field):

@@ -1,8 +1,4 @@
 # Lógica principal del sistema de recomendación
-from .data_preprocessing import cargar_datos_cursos, cargar_datos_estudiantes
-from .tag_extraction import extraer_tags_spacy
-from .embeddings import obtener_embeddings_tags_df
-from .similarity import calcular_similitud
 import pandas as pd
 
 
@@ -29,3 +25,12 @@ def recomendar_cursos_todos_los_estudiantes(matriz_afinidad, top_n=3):
             estudiante_id, matriz_afinidad, top_n
         )
     return recomendaciones
+
+
+def ranking_top_cursos_por_similitud(df_similitud, top_n=3):
+    """
+    Recibe un DataFrame con columnas ['CursoID', 'Similitud'] y retorna los top_n cursos recomendados,
+    ordenados de mayor a menor similitud. Devuelve una lista de tuplas (CursoID, Similitud).
+    """
+    top = df_similitud.sort_values("Similitud", ascending=False).head(top_n)
+    return list(zip(top["CursoID"], top["Similitud"]))

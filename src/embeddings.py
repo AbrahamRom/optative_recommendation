@@ -1,18 +1,41 @@
-# Obtención de embeddings de texto
-from sentence_transformers import SentenceTransformer
 import os
 import pickle
 import pandas as pd
 import numpy as np
+from huggingface_hub import snapshot_download
 
-model = SentenceTransformer("distiluse-base-multilingual-cased-v1")
+# Configuración de modelo y carpeta local
+MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"  # Puedes cambiar el modelo aquí
+HUGGINGFACE_CACHE_DIR = os.path.join("data", "models", "huggingface_cache")
 
 
-def obtener_embeddings_tags(tags, model=model):
+# Lazy loading del modelo para evitar cargarlo al importar el módulo
+def get_sentence_transformer_model():
+    if not hasattr(get_sentence_transformer_model, "_model"):
+        # Descarga explícita del modelo a la caché general (si no existe)
+        os.makedirs(HUGGINGFACE_CACHE_DIR, exist_ok=True)
+        local_model_path = snapshot_download(
+            repo_id=MODEL_NAME,
+            cache_dir=HUGGINGFACE_CACHE_DIR,
+        )
+        from sentence_transformers import SentenceTransformer
+
+        get_sentence_transformer_model._model = SentenceTransformer(
+            local_model_path, local_files_only=True
+        )
+    return get_sentence_transformer_model._model
+
+
+# Obtención de embeddings de texto
+
+
+def obtener_embeddings_tags(tags, model=None):
     """
     Convierte una lista de tags (strings) en un embedding promedio usando Sentence Transformers.
     Si la lista está vacía, retorna un vector de ceros.
     """
+    if model is None:
+        model = get_sentence_transformer_model()
     if isinstance(tags, pd.Series):
         tags = tags.tolist()
     if not tags or not isinstance(tags, list):
@@ -39,10 +62,12 @@ def convertir_tags_a_lista(tags):
     return []
 
 
-def obtener_embeddings_tags_df(df, tags_col="Tags", model=model):
+def obtener_embeddings_tags_df(df, tags_col="Tags", model=None):
     """
     Agrega una columna 'Tags_Embedding' al DataFrame con el embedding promedio de los tags.
     """
+    if model is None:
+        model = get_sentence_transformer_model()
     df[tags_col] = df[tags_col].apply(convertir_tags_a_lista)
     df["Tags_Embedding"] = df[tags_col].apply(
         lambda tags: obtener_embeddings_tags(tags, model)

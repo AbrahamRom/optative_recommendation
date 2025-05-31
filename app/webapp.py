@@ -143,13 +143,37 @@ if section == "Estudiante":
             st.info("No hay cursos registrados.")
     elif student_action == "Recomendar cursos":
         st.subheader("Recomendación de cursos para ti")
-        # Ranking predefinido de ejemplo
+        estudiante_id = st.number_input(
+            "ID de estudiante para recomendar", min_value=1, step=1, key="rec_id"
+        )
+        if st.button("Obtener recomendaciones reales"):
+            try:
+                ranking = api.recomendar_top_cursos_para_estudiante(
+                    estudiante_id, top_n=3
+                )
+                if not ranking:
+                    st.info("No hay recomendaciones disponibles para este estudiante.")
+                else:
+                    st.write("Ranking de cursos recomendados:")
+                    # Obtener todos los cursos para mapear id a nombre y descripción
+                    cursos_dict = {str(c["CursoID"]): c for c in api.get_all_courses()}
+                    for i, (curso_id, score) in enumerate(ranking, 1):
+                        curso = cursos_dict.get(str(curso_id), {})
+                        nombre = curso.get("Nombre", f"CursoID {curso_id}")
+                        descripcion = curso.get("Descripcion", "")
+                        st.markdown(
+                            f"{i}. **{nombre}** (ID: {curso_id}) - Score: {score:.3f}"
+                        )
+                        if descripcion:
+                            st.write(descripcion)
+            except Exception as e:
+                st.error(f"Error al calcular recomendaciones: {e}")
+        st.write("Ranking de cursos recomendados (ejemplo):")
         ranking = [
             {"Nombre": "Optativa A", "CursoID": 1, "Score": 0.95},
             {"Nombre": "Optativa B", "CursoID": 2, "Score": 0.90},
             {"Nombre": "Optativa C", "CursoID": 3, "Score": 0.85},
         ]
-        st.write("Ranking de cursos recomendados (ejemplo):")
         for i, curso in enumerate(ranking, 1):
             st.markdown(
                 f"{i}. **{curso['Nombre']}** (ID: {curso['CursoID']}) - Score: {curso['Score']}"
@@ -174,6 +198,7 @@ elif section == "Docente":
                 st.success(f"Curso registrado con ID: {curso_id}")
 
     elif docente_action == "Editar curso":
+        st.subheader("Editar curso existente")
         curso_id = st.number_input(
             "ID del curso a editar", min_value=1, step=1, key="edit_curso_id"
         )
