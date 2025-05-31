@@ -1,15 +1,16 @@
-# EstudianteID,Nombre,Tags,Descripcion
-1,Ana,"inteligencia artificial, machine learning, automatizacion, programacion, analisis de datos","Me interesa la inteligencia artificial y el aprendizaje automatico. Quiero desarrollar habilidades en programacion y analisis de datos."
-2,Juan,"redes, ciberseguridad, hardware, administracion de sistemas, seguridad informatica","Me gustan las redes y la ciberseguridad. Me gustaria aprender sobre administracion de sistemas y seguridad."
-3,Lucia,"matematicas, logica, algoritmos, resolucion de problemas, pensamiento logico","Me apasionan las matematicas y la logica. Quiero mejorar mi capacidad de resolucion de problemas."
-4,Pedro,"desarrollo web, diseño, frontend, backend, bases de datos","Me interesa el desarrollo web tanto en frontend como backend. Quiero aprender sobre bases de datos y diseño."
-5,María,"robotica, electronica, automatizacion, programacion, ingenieria","Me apasiona la robotica y la electronica. Quiero aplicar mis conocimientos en ingenieria y programacion."
-6,Carlos,"videojuegos, programacion, graficos, inteligencia artificial, creatividad","Me gusta crear videojuegos y aprender sobre graficos y programacion. Me interesa la inteligencia artificial y la creatividad."
-7,Sofia,"biotecnologia, genetica, investigacion, laboratorio, biologia","Me interesa la biotecnologia y la genetica. Quiero trabajar en investigacion de laboratorio y biologia."
-8,Diego,"moviles, aplicaciones, desarrollo android, desarrollo ios, experiencia de usuario","Me gusta desarrollar aplicaciones moviles y aprender sobre experiencia de usuario."
-9,Valentina,"big data, analisis de datos, estadistica, visualizacion, ciencia de datos","Me apasiona el big data y la ciencia de datos. Quiero mejorar mis habilidades en estadistica y visualizacion."
-10,Martin,"sistemas embebidos, hardware, programacion, electronica, microcontroladores","Me interesa el desarrollo de sistemas embebidos y trabajar con microcontroladores."
-11,Paula,"inteligencia de negocios, gestion, emprendimiento, liderazgo, innovacion","Me interesa la inteligencia de negocios y el emprendimiento. Quiero desarrollar habilidades de liderazgo e innovacion."
-12,Andres,"realidad virtual, realidad aumentada, multimedia, diseño 3d, programacion","Me gusta la realidad virtual y aumentada. Quiero aprender sobre multimedia y diseño 3D."
-13,Laura,"educacion, tecnologia educativa, aprendizaje, pedagogia, innovacion","Me interesa la tecnologia educativa y la innovacion en el aprendizaje."
-14,Esteban,"blockchain, criptomonedas, seguridad, finanzas, desarrollo de software","Me interesa el blockchain y las criptomonedas. Quiero aprender sobre seguridad y desarrollo de software."
+EstudianteID,Nombre,Tags,Descripcion
+1,Ana,"inteligencia artificial, machine learning, automatizacion, programacion, analisis de datos",Me interesa la inteligencia artificial y el aprendizaje automatico. Quiero desarrollar habilidades en programacion y analisis de datos.
+2,Juan,"redes, ciberseguridad, hardware, administracion de sistemas, seguridad informatica",Me gustan las redes y la ciberseguridad. Me gustaria aprender sobre administracion de sistemas y seguridad.
+3,Lucia,"matematicas, logica, algoritmos, resolucion de problemas, pensamiento logico",Me apasionan las matematicas y la logica. Quiero mejorar mi capacidad de resolucion de problemas.
+4,Pedro,"desarrollo web, diseño, frontend, backend, bases de datos",Me interesa el desarrollo web tanto en frontend como backend. Quiero aprender sobre bases de datos y diseño.
+5,María,"robotica, electronica, automatizacion, programacion, ingenieria",Me apasiona la robotica y la electronica. Quiero aplicar mis conocimientos en ingenieria y programacion.
+6,Carlos,"videojuegos, programacion, graficos, inteligencia artificial, creatividad",Me gusta crear videojuegos y aprender sobre graficos y programacion. Me interesa la inteligencia artificial y la creatividad.
+7,Sofia,"biotecnologia, genetica, investigacion, laboratorio, biologia",Me interesa la biotecnologia y la genetica. Quiero trabajar en investigacion de laboratorio y biologia.
+8,Diego,"moviles, aplicaciones, desarrollo android, desarrollo ios, experiencia de usuario",Me gusta desarrollar aplicaciones moviles y aprender sobre experiencia de usuario.
+9,Valentina,"big data, analisis de datos, estadistica, visualizacion, ciencia de datos",Me apasiona el big data y la ciencia de datos. Quiero mejorar mis habilidades en estadistica y visualizacion.
+10,Martin,"sistemas embebidos, hardware, programacion, electronica, microcontroladores",Me interesa el desarrollo de sistemas embebidos y trabajar con microcontroladores.
+11,Paula,"inteligencia de negocios, gestion, emprendimiento, liderazgo, innovacion",Me interesa la inteligencia de negocios y el emprendimiento. Quiero desarrollar habilidades de liderazgo e innovacion.
+12,Andres,"realidad virtual, realidad aumentada, multimedia, diseño 3d, programacion",Me gusta la realidad virtual y aumentada. Quiero aprender sobre multimedia y diseño 3D.
+13,Laura,"educacion, tecnologia educativa, aprendizaje, pedagogia, innovacion",Me interesa la tecnologia educativa y la innovacion en el aprendizaje.
+14,Esteban,"blockchain, criptomonedas, seguridad, finanzas, desarrollo de software",Me interesa el blockchain y las criptomonedas. Quiero aprender sobre seguridad y desarrollo de software.
+15,Pepe,"machine learning, big data, ciencia de datos","Me encanta el mundo de la IA, quisiera hacer un chatbot como ChatGPT. Quiero desarrollarlo un poco"

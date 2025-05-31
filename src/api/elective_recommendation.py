@@ -1,0 +1,167 @@
+import os
+import csv
+import sys
+import importlib.util
+
+
+class ElectiveRecommendationAPI:
+    def __init__(self, data_path):
+        self.data_path = data_path
+        self.predefined_tags = self._load_predefined_tags()
+
+    def _load_predefined_tags(self):
+        """Carga la lista de tags predefinidos desde un archivo Python en data_path."""
+        predefined_tags_path = os.path.join(self.data_path, "predefined_tags.py")
+        if os.path.exists(predefined_tags_path):
+            spec = importlib.util.spec_from_file_location(
+                "predefined_tags", predefined_tags_path
+            )
+            tags_module = importlib.util.module_from_spec(spec)
+            sys.modules["predefined_tags"] = tags_module
+            spec.loader.exec_module(tags_module)
+            return tags_module.predefined_tags
+        return []
+
+    # --- Métodos de estudiantes ---
+    def register_student(self, nombre, tags, descripcion):
+        """Registra un nuevo estudiante en students.csv."""
+        if not nombre or not nombre.strip():
+            raise ValueError("El nombre del estudiante no puede estar vacío.")
+        students_file = os.path.join(self.data_path, "students.csv")
+        estudiante_id = self._get_next_id(students_file, "EstudianteID")
+        self._append_row(
+            students_file,
+            ["EstudianteID", "Nombre", "Tags", "Descripcion"],
+            [estudiante_id, nombre, tags, descripcion],
+        )
+        return estudiante_id
+
+    def edit_student(self, estudiante_id, nombre=None, tags=None, descripcion=None):
+        """Edita los campos de un estudiante existente en students.csv."""
+        students_file = os.path.join(self.data_path, "students.csv")
+        self._edit_row(
+            students_file,
+            "EstudianteID",
+            estudiante_id,
+            ["EstudianteID", "Nombre", "Tags", "Descripcion"],
+            nombre=nombre,
+            tags=tags,
+            descripcion=descripcion,
+        )
+        return True
+
+    def get_student(self, estudiante_id):
+        """Devuelve un diccionario con los campos del estudiante según su EstudianteID."""
+        students_file = os.path.join(self.data_path, "students.csv")
+        return self._get_row_by_id(students_file, "EstudianteID", estudiante_id)
+
+    # --- Métodos de cursos ---
+    def register_course(self, nombre, descripcion):
+        """Registra un nuevo curso en courses.csv."""
+        if not nombre or not nombre.strip():
+            raise ValueError("El nombre del curso no puede estar vacío.")
+        courses_file = os.path.join(self.data_path, "courses.csv")
+        curso_id = self._get_next_id(courses_file, "CursoID")
+        self._append_row(
+            courses_file,
+            ["CursoID", "Nombre", "Descripcion"],
+            [curso_id, nombre, descripcion],
+        )
+        return curso_id
+
+    def edit_course(self, curso_id, nombre=None, descripcion=None):
+        """Edita los campos de un curso existente en courses.csv."""
+        courses_file = os.path.join(self.data_path, "courses.csv")
+        self._edit_row(
+            courses_file,
+            "CursoID",
+            curso_id,
+            ["CursoID", "Nombre", "Descripcion"],
+            nombre=nombre,
+            descripcion=descripcion,
+        )
+        return True
+
+    def get_course(self, curso_id):
+        """Devuelve un diccionario con los campos del curso según su CursoID."""
+        courses_file = os.path.join(self.data_path, "courses.csv")
+        return self._get_row_by_id(courses_file, "CursoID", curso_id)
+
+    def get_all_courses(self):
+        """Devuelve una lista de diccionarios, cada uno representando un curso disponible."""
+        courses_file = os.path.join(self.data_path, "courses.csv")
+        return self._get_all_rows(courses_file)
+
+    def get_predefined_tags(self):
+        """Devuelve la lista de tags predefinidos cargados desde predefined_tags.py."""
+        return self.predefined_tags
+
+    # --- Métodos auxiliares internos ---
+    def _get_next_id(self, file_path, id_field):
+        """Obtiene el siguiente ID incremental para un archivo CSV."""
+        next_id = 1
+        if os.path.exists(file_path):
+            with open(file_path, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                if rows:
+                    next_id = int(rows[-1][id_field]) + 1
+        return next_id
+
+    def _append_row(self, file_path, headers, row):
+        """Agrega una fila a un archivo CSV, creando encabezado si es necesario."""
+        write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
+        with open(file_path, mode="a", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            if write_header:
+                writer.writerow(headers)
+            writer.writerow(row)
+
+    def _edit_row(self, file_path, id_field, row_id, headers, **kwargs):
+        """Edita una fila en un archivo CSV por su ID, actualizando solo los campos dados."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(
+                f"El archivo {os.path.basename(file_path)} no existe."
+            )
+        rows = []
+        found = False
+        with open(file_path, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if str(row[id_field]) == str(row_id):
+                    found = True
+                    for key, value in kwargs.items():
+                        if value is not None:
+                            if key == "nombre" and not value.strip():
+                                raise ValueError(f"El nombre no puede estar vacío.")
+                            # Mapear nombre -> Nombre, tags -> Tags, descripcion -> Descripcion
+                            col = key.capitalize() if key != "tags" else "Tags"
+                            row[col] = value
+                rows.append(row)
+        if not found:
+            raise ValueError(f"No se encontró el registro con ID {row_id}.")
+        with open(file_path, mode="w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(rows)
+
+    def _get_row_by_id(self, file_path, id_field, row_id):
+        """Devuelve un diccionario con los campos de una fila por su ID."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(
+                f"El archivo {os.path.basename(file_path)} no existe."
+            )
+        with open(file_path, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if str(row[id_field]) == str(row_id):
+                    return row
+        raise ValueError(f"No se encontró el registro con ID {row_id}.")
+
+    def _get_all_rows(self, file_path):
+        """Devuelve una lista de diccionarios con todas las filas de un archivo CSV."""
+        if not os.path.exists(file_path):
+            return []
+        with open(file_path, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            return list(reader)
