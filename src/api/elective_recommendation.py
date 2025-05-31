@@ -34,6 +34,7 @@ class ElectiveRecommendationAPI:
             ["EstudianteID", "Nombre", "Tags", "Descripcion"],
             [estudiante_id, nombre, tags, descripcion],
         )
+        self.recalculate_student_tags(estudiante_id)
         return estudiante_id
 
     def edit_student(self, estudiante_id, nombre=None, tags=None, descripcion=None):
@@ -48,6 +49,7 @@ class ElectiveRecommendationAPI:
             tags=tags,
             descripcion=descripcion,
         )
+        self.recalculate_student_tags(estudiante_id)
         return True
 
     def get_student(self, estudiante_id):
@@ -67,6 +69,7 @@ class ElectiveRecommendationAPI:
             ["CursoID", "Nombre", "Descripcion"],
             [curso_id, nombre, descripcion],
         )
+        self.recalculate_course_tags(curso_id)
         return curso_id
 
     def edit_course(self, curso_id, nombre=None, descripcion=None):
@@ -80,6 +83,9 @@ class ElectiveRecommendationAPI:
             nombre=nombre,
             descripcion=descripcion,
         )
+
+        self.recalculate_course_tags(curso_id)
+
         return True
 
     def get_course(self, curso_id):
@@ -95,6 +101,95 @@ class ElectiveRecommendationAPI:
     def get_predefined_tags(self):
         """Devuelve la lista de tags predefinidos cargados desde predefined_tags.py."""
         return self.predefined_tags
+
+    def recalculate_course_tags(self, curso_id):
+        """
+        Recalcula y actualiza los tags del curso con el ID dado en courses_with_tags.csv
+        después de registrar o editar un curso.
+        """
+        import importlib.util
+        import sys
+        import os
+
+        # Importar los módulos usando ruta absoluta relativa
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        data_preprocessing_path = os.path.join(base_dir, "data_preprocessing.py")
+        tag_extraction_path = os.path.join(base_dir, "tag_extraction.py")
+
+        spec1 = importlib.util.spec_from_file_location(
+            "data_preprocessing", data_preprocessing_path
+        )
+        data_preprocessing = importlib.util.module_from_spec(spec1)
+        sys.modules["data_preprocessing"] = data_preprocessing
+        spec1.loader.exec_module(data_preprocessing)
+
+        spec2 = importlib.util.spec_from_file_location(
+            "tag_extraction", tag_extraction_path
+        )
+        tag_extraction = importlib.util.module_from_spec(spec2)
+        sys.modules["tag_extraction"] = tag_extraction
+        spec2.loader.exec_module(tag_extraction)
+
+        courses_csv = os.path.join(self.data_path, "courses.csv")
+        courses_with_tags_csv = os.path.join(self.data_path, "courses_with_tags.csv")
+
+        # Preprocesar solo la fila del curso editado/registrado
+        df_curso = data_preprocessing.preprocesar_curso_por_id(courses_csv, curso_id)
+        # Extraer y guardar los tags solo para ese curso
+        tag_extraction.extraer_guardar_tags_curso_por_id(
+            df_curso,
+            curso_id,
+            columna="Descripcion_Limpia",
+            n_max=5,
+            csv_path=courses_with_tags_csv,
+        )
+        return True
+
+    def recalculate_student_tags(self, estudiante_id):
+        """
+        Recalcula y actualiza los tags del estudiante con el ID dado en students_with_tags.csv
+        después de registrar o editar un estudiante.
+        """
+        import importlib.util
+        import sys
+        import os
+
+        # Importar los módulos usando ruta absoluta relativa
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        data_preprocessing_path = os.path.join(base_dir, "data_preprocessing.py")
+        tag_extraction_path = os.path.join(base_dir, "tag_extraction.py")
+
+        spec1 = importlib.util.spec_from_file_location(
+            "data_preprocessing", data_preprocessing_path
+        )
+        data_preprocessing = importlib.util.module_from_spec(spec1)
+        sys.modules["data_preprocessing"] = data_preprocessing
+        spec1.loader.exec_module(data_preprocessing)
+
+        spec2 = importlib.util.spec_from_file_location(
+            "tag_extraction", tag_extraction_path
+        )
+        tag_extraction = importlib.util.module_from_spec(spec2)
+        sys.modules["tag_extraction"] = tag_extraction
+        spec2.loader.exec_module(tag_extraction)
+
+        students_csv = os.path.join(self.data_path, "students.csv")
+        students_with_tags_csv = os.path.join(self.data_path, "students_with_tags.csv")
+
+        # Preprocesar solo la fila del estudiante editado/registrado
+        df_estudiante = data_preprocessing.preprocesar_estudiante_por_id(
+            students_csv, estudiante_id
+        )
+        # Extraer y guardar los tags solo para ese estudiante
+        tag_extraction.extraer_guardar_tags_estudiante_por_id(
+            df_estudiante,
+            estudiante_id,
+            tags_col="Tags_Limpio",
+            desc_col="Descripcion_Limpia",
+            n_max=5,
+            csv_path=students_with_tags_csv,
+        )
+        return True
 
     # --- Métodos auxiliares internos ---
     def _get_next_id(self, file_path, id_field):

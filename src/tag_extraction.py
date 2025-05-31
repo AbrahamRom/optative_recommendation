@@ -91,3 +91,91 @@ def guardar_tags_estudiantes_csv(df, path="data/students_with_tags.csv"):
     df_copy = df_copy[["EstudianteID", "Tags"]]
     df_copy.to_csv(path, index=False)
     return path
+
+
+def extraer_guardar_tags_curso_por_id(
+    df, curso_id, columna="Descripcion_Limpia", n_max=5, csv_path=None
+):
+    """
+    Devuelve el DataFrame completo, pero solo la fila del curso con el id dado tiene la columna 'Tags' actualizada.
+    Si se pasa csv_path, guarda la fila modificada en el CSV correspondiente (solo esa fila).
+    """
+    if "Tags" not in df.columns:
+        df["Tags"] = None
+    idx = df[df["CursoID"] == curso_id].index
+    if len(idx) == 0:
+        raise ValueError(f"No se encontró el curso con ID {curso_id}")
+    i = idx[0]
+    df.at[i, "Tags"] = extraer_tags_spacy(df.at[i, columna])[:n_max]
+    if csv_path:
+        # Guardar solo la fila modificada en el CSV correspondiente
+        row_to_save = df.loc[[i], ["CursoID", "Tags"]].copy()
+        # Convertir lista de tags a string
+        row_to_save["Tags"] = row_to_save["Tags"].apply(
+            lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
+        )
+        # Leer el CSV original, actualizar solo la fila correspondiente
+        try:
+            df_csv = pd.read_csv(csv_path)
+            idx_csv = df_csv[df_csv["CursoID"] == curso_id].index
+            if len(idx_csv) > 0:
+                df_csv.loc[idx_csv[0], "Tags"] = row_to_save.iloc[0]["Tags"]
+            else:
+                # Si no existe, agregar la fila
+                df_csv = pd.concat([df_csv, row_to_save], ignore_index=True)
+        except Exception:
+            # Si el archivo no existe, crearlo
+            df_csv = row_to_save
+        df_csv.to_csv(csv_path, index=False)
+    return df
+
+
+def extraer_guardar_tags_estudiante_por_id(
+    df,
+    estudiante_id,
+    tags_col="Tags_Limpio",
+    desc_col="Descripcion_Limpia",
+    n_max=5,
+    csv_path=None,
+):
+    """
+    Devuelve el DataFrame completo, pero solo la fila del estudiante con el id dado tiene la columna 'Tags' actualizada.
+    Si se pasa csv_path, guarda la fila modificada en el CSV correspondiente (solo esa fila).
+    """
+    if "Tags" not in df.columns:
+        df["Tags"] = None
+    idx = df[df["EstudianteID"] == estudiante_id].index
+    if len(idx) == 0:
+        raise ValueError(f"No se encontró el estudiante con ID {estudiante_id}")
+    i = idx[0]
+    tags = set()
+    tags_str = df.at[i, tags_col]
+    desc = df.at[i, desc_col]
+    if isinstance(tags_str, str) and tags_str.strip():
+        tags.update(
+            [
+                " ".join([token.lemma_ for token in nlp(tag.strip())])
+                for tag in tags_str.split(",")
+                if tag.strip()
+            ]
+        )
+    if isinstance(desc, str) and desc.strip():
+        tags.update(extraer_tags_spacy(desc)[:n_max])
+    df.at[i, "Tags"] = sorted(list(tags))
+    if csv_path:
+        # Guardar solo la fila modificada en el CSV correspondiente
+        row_to_save = df.loc[[i], ["EstudianteID", "Tags"]].copy()
+        row_to_save["Tags"] = row_to_save["Tags"].apply(
+            lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
+        )
+        try:
+            df_csv = pd.read_csv(csv_path)
+            idx_csv = df_csv[df_csv["EstudianteID"] == estudiante_id].index
+            if len(idx_csv) > 0:
+                df_csv.loc[idx_csv[0], "Tags"] = row_to_save.iloc[0]["Tags"]
+            else:
+                df_csv = pd.concat([df_csv, row_to_save], ignore_index=True)
+        except Exception:
+            df_csv = row_to_save
+        df_csv.to_csv(csv_path, index=False)
+    return df

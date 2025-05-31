@@ -64,3 +64,33 @@ def cargar_datos_estudiantes(path):
     )
     # print(df["Tags_List"].head())
     return df
+
+
+def preprocesar_curso_por_id(path, curso_id):
+    """
+    Devuelve el DataFrame completo, pero con la fila del curso con el id dado 'limpia' (Nombre_Limpio, Descripcion_Limpia actualizados solo para esa fila).
+    """
+    df = cargar_datos_cursos(path)
+    idx = df[df["CursoID"] == curso_id].index
+    if len(idx) == 0:
+        raise ValueError(f"No se encontró el curso con ID {curso_id}")
+    i = idx[0]
+    df.at[i, "Nombre_Limpio"] = limpiar_texto(df.at[i, "Nombre"])
+    df.at[i, "Descripcion_Limpia"] = limpiar_texto(df.at[i, "Descripcion"])
+    return df
+
+
+def preprocesar_estudiante_por_id(path, estudiante_id):
+    """
+    Devuelve el DataFrame completo, pero con la fila del estudiante con el id dado 'limpia' (Tags_Limpio, Descripcion_Limpia, Tags_List actualizados solo para esa fila).
+    """
+    df = cargar_datos_estudiantes(path)
+    idx = df[df["EstudianteID"] == estudiante_id].index
+    if len(idx) == 0:
+        raise ValueError(f"No se encontró el estudiante con ID {estudiante_id}")
+    i = idx[0]
+    df.at[i, "Tags_Limpio"] = df.at[i, "Tags"]
+    df.at[i, "Descripcion_Limpia"] = limpiar_texto(df.at[i, "Descripcion"])
+    df.at[i, "Tags_List"] = [tag.strip() for tag in str(df.at[i, "Tags_Limpio"]).split(",") if tag.strip()]
+    return df
+
