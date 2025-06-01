@@ -1,34 +1,61 @@
+"""
+Módulo de utilidades para embeddings de texto usando Sentence Transformers.
+Incluye funciones para cargar modelos, procesar tags y gestionar embeddings en DataFrames.
+"""
 import os
 import pickle
 import pandas as pd
 import numpy as np
 from huggingface_hub import snapshot_download
 
-# Configuración de modelo y carpeta local
-MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"  # Puedes cambiar el modelo aquí
+# =========================
+# Configuración de modelo
+# =========================
+MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"
 HUGGINGFACE_CACHE_DIR = os.path.join("data", "models", "huggingface_cache")
 
-
-# Lazy loading del modelo para evitar cargarlo al importar el módulo
+# =========================
+# Carga perezosa del modelo
+# =========================
 def get_sentence_transformer_model():
+    """
+    Carga el modelo SentenceTransformer de HuggingFace, descargándolo si es necesario.
+    Utiliza caché local para evitar descargas repetidas.
+    """
     if not hasattr(get_sentence_transformer_model, "_model"):
-        # Descarga explícita del modelo a la caché general (si no existe)
         os.makedirs(HUGGINGFACE_CACHE_DIR, exist_ok=True)
         local_model_path = snapshot_download(
             repo_id=MODEL_NAME,
             cache_dir=HUGGINGFACE_CACHE_DIR,
         )
         from sentence_transformers import SentenceTransformer
-
         get_sentence_transformer_model._model = SentenceTransformer(
             local_model_path, local_files_only=True
         )
     return get_sentence_transformer_model._model
 
+# =========================
+# Procesamiento de tags
+# =========================
+def convertir_tags_a_lista(tags):
+    """
+    Convierte una entrada de tags (str, list, pd.Series) a una lista de strings.
+    Soporta separadores por coma o punto y coma.
+    """
+    if isinstance(tags, list):
+        return tags
+    if isinstance(tags, pd.Series):
+        return tags.tolist()
+    if isinstance(tags, str) and tags.strip():
+        if ";" in tags:
+            return [tag.strip() for tag in tags.split(";") if tag.strip()]
+        else:
+            return [tag.strip() for tag in tags.split(",") if tag.strip()]
+    return []
 
-# Obtención de embeddings de texto
-
-
+# =========================
+# Embeddings de tags
+# =========================
 def obtener_embeddings_tags(tags, model=None):
     """
     Convierte una lista de tags (strings) en un embedding promedio usando Sentence Transformers.
@@ -41,25 +68,10 @@ def obtener_embeddings_tags(tags, model=None):
     if not tags or not isinstance(tags, list):
         return [0.0] * model.get_sentence_embedding_dimension()
     embeddings = model.encode(tags)
-    # Si embeddings es 1D (solo un tag), conviértelo a 2D para hacer mean
     embeddings = np.array(embeddings)
     if embeddings.ndim == 1:
         return embeddings.tolist()
     return embeddings.mean(axis=0).tolist()
-
-
-def convertir_tags_a_lista(tags):
-    if isinstance(tags, list):
-        return tags
-    if isinstance(tags, pd.Series):
-        return tags.tolist()
-    if isinstance(tags, str) and tags.strip():
-        # Soporta tanto punto y coma como coma como separador
-        if ";" in tags:
-            return [tag.strip() for tag in tags.split(";") if tag.strip()]
-        else:
-            return [tag.strip() for tag in tags.split(",") if tag.strip()]
-    return []
 
 
 def obtener_embeddings_tags_df(df, tags_col="Tags", model=None):
@@ -68,20 +80,27 @@ def obtener_embeddings_tags_df(df, tags_col="Tags", model=None):
     """
     if model is None:
         model = get_sentence_transformer_model()
+    df = df.copy()
     df[tags_col] = df[tags_col].apply(convertir_tags_a_lista)
-    df["Tags_Embedding"] = df[tags_col].apply(
-        lambda tags: obtener_embeddings_tags(tags, model)
-    )
+    df["Tags_Embedding"] = df[tags_col].apply(lambda tags: obtener_embeddings_tags(tags, model))
     return df
 
-
+# =========================
+# Guardado y carga de embeddings
+# =========================
 def guardar_embeddings_courses_df(df, path="data/courses_tags_embeddings.pkl"):
     """
-    Guarda el DataFrame con la columna 'Tags_Embedding' en un archivo pickle.
+    Guarda el DataFrame de cursos con la columna 'Tags_Embedding' en un archivo pickle.
     """
     df[["CursoID", "Tags", "Tags_Embedding"]].to_pickle(path)
     return path
 
+def guardar_embeddings_estudiantes_df(df, path="data/students_tags_embeddings.pkl"):
+    """
+    Guarda el DataFrame de estudiantes con la columna 'Tags_Embedding' en un archivo pickle.
+    """
+    df[["EstudianteID", "Tags", "Tags_Embedding"]].to_pickle(path)
+    return path
 
 def cargar_embeddings_tags_df(path="data/courses_tags_embeddings.pkl"):
     """
@@ -89,10 +108,11 @@ def cargar_embeddings_tags_df(path="data/courses_tags_embeddings.pkl"):
     """
     if os.path.exists(path):
         return pd.read_pickle(path)
-    else:
-        return None
+    return None
 
-
+# =========================
+# Actualización inteligente de embeddings
+# =========================
 def actualizar_embeddings_si_necesario(df, path):
     """
     Recalcula y guarda los embeddings solo si hay cursos o estudiantes nuevos o modificados.
@@ -100,7 +120,6 @@ def actualizar_embeddings_si_necesario(df, path):
     """
     df_existente = cargar_embeddings_tags_df(path)
     recalcular = False
-    # Detectar si es cursos o estudiantes
     id_col = None
     if "CursoID" in df.columns:
         id_col = "CursoID"
@@ -118,19 +137,9 @@ def actualizar_embeddings_si_necesario(df, path):
             recalcular = True
     if recalcular:
         df = obtener_embeddings_tags_df(df, tags_col="Tags")
-        # Guardar según el tipo
         if id_col == "CursoID":
             guardar_embeddings_courses_df(df, path)
         else:
             guardar_embeddings_estudiantes_df(df, path)
         return df
-    else:
-        return df_existente
-
-
-def guardar_embeddings_estudiantes_df(df, path="data/students_tags_embeddings.pkl"):
-    """
-    Guarda el DataFrame de estudiantes con la columna 'Tags_Embedding' en un archivo pickle.
-    """
-    df[["EstudianteID", "Tags", "Tags_Embedding"]].to_pickle(path)
-    return path
+    return df_existente

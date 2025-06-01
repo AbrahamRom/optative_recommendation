@@ -6,3 +6,4 @@ src/__pycache__/data_preprocessing.cpython-312.pyc
 src/__pycache__/tag_extraction.cpython-312.pyc
 /data/models
 *.pyc
+/distiluse-base-multilingual-cased-v1

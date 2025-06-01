@@ -102,37 +102,31 @@ class ElectiveRecommendationAPI:
         """Devuelve la lista de tags predefinidos cargados desde predefined_tags.py."""
         return self.predefined_tags
 
+    def _dynamic_import(self, module_name, module_path):
+        """Importa dinámicamente un módulo dado su nombre y ruta."""
+        import importlib.util
+        import sys
+
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        return module
+
     def recalculate_course_data(self, curso_id):
         """
         Recalcula y actualiza los tags del curso con el ID dado en courses_with_tags.csv
         después de registrar o editar un curso.
         """
-        import importlib.util
-        import sys
-        import os
-
-        # Importar los módulos usando ruta absoluta relativa
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        data_preprocessing_path = os.path.join(base_dir, "data_preprocessing.py")
-        tag_extraction_path = os.path.join(base_dir, "tag_extraction.py")
-
-        spec1 = importlib.util.spec_from_file_location(
-            "data_preprocessing", data_preprocessing_path
+        data_preprocessing = self._dynamic_import(
+            "data_preprocessing", os.path.join(base_dir, "data_preprocessing.py")
         )
-        data_preprocessing = importlib.util.module_from_spec(spec1)
-        sys.modules["data_preprocessing"] = data_preprocessing
-        spec1.loader.exec_module(data_preprocessing)
-
-        spec2 = importlib.util.spec_from_file_location(
-            "tag_extraction", tag_extraction_path
+        tag_extraction = self._dynamic_import(
+            "tag_extraction", os.path.join(base_dir, "tag_extraction.py")
         )
-        tag_extraction = importlib.util.module_from_spec(spec2)
-        sys.modules["tag_extraction"] = tag_extraction
-        spec2.loader.exec_module(tag_extraction)
-
         courses_csv = os.path.join(self.data_path, "courses.csv")
         courses_with_tags_csv = os.path.join(self.data_path, "courses_with_tags.csv")
-
         # Preprocesar solo la fila del curso editado/registrado
         df_curso = data_preprocessing.preprocesar_curso_por_id(courses_csv, curso_id)
         # Extraer y guardar los tags solo para ese curso
@@ -144,23 +138,14 @@ class ElectiveRecommendationAPI:
             csv_path=courses_with_tags_csv,
         )
         # Actualizar los embeddings de tags si es necesario
-        embeddings_path = os.path.join(self.data_path, "courses_tags_embeddings.pkl")
-        # Importar embeddings dinámicamente
-        embeddings_path_module = os.path.join(
-            os.path.dirname(base_dir), "src", "embeddings.py"
+        embeddings = self._dynamic_import(
+            "embeddings",
+            os.path.join(os.path.dirname(base_dir), "src", "embeddings.py"),
         )
-        spec_emb = importlib.util.spec_from_file_location(
-            "embeddings", embeddings_path_module
-        )
-        embeddings = importlib.util.module_from_spec(spec_emb)
-        sys.modules["embeddings"] = embeddings
-        spec_emb.loader.exec_module(embeddings)
-        # Cargar el df actualizado de tags
         import pandas as pd
 
         df_tags = pd.read_csv(courses_with_tags_csv)
         # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
-
         return True
 
     def recalculate_student_data(self, estudiante_id):
@@ -168,32 +153,15 @@ class ElectiveRecommendationAPI:
         Recalcula y actualiza los tags del estudiante con el ID dado en students_with_tags.csv
         después de registrar o editar un estudiante.
         """
-        import importlib.util
-        import sys
-        import os
-
-        # Importar los módulos usando ruta absoluta relativa
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        data_preprocessing_path = os.path.join(base_dir, "data_preprocessing.py")
-        tag_extraction_path = os.path.join(base_dir, "tag_extraction.py")
-
-        spec1 = importlib.util.spec_from_file_location(
-            "data_preprocessing", data_preprocessing_path
+        data_preprocessing = self._dynamic_import(
+            "data_preprocessing", os.path.join(base_dir, "data_preprocessing.py")
         )
-        data_preprocessing = importlib.util.module_from_spec(spec1)
-        sys.modules["data_preprocessing"] = data_preprocessing
-        spec1.loader.exec_module(data_preprocessing)
-
-        spec2 = importlib.util.spec_from_file_location(
-            "tag_extraction", tag_extraction_path
+        tag_extraction = self._dynamic_import(
+            "tag_extraction", os.path.join(base_dir, "tag_extraction.py")
         )
-        tag_extraction = importlib.util.module_from_spec(spec2)
-        sys.modules["tag_extraction"] = tag_extraction
-        spec2.loader.exec_module(tag_extraction)
-
         students_csv = os.path.join(self.data_path, "students.csv")
         students_with_tags_csv = os.path.join(self.data_path, "students_with_tags.csv")
-
         # Preprocesar solo la fila del estudiante editado/registrado
         df_estudiante = data_preprocessing.preprocesar_estudiante_por_id(
             students_csv, estudiante_id
@@ -208,21 +176,14 @@ class ElectiveRecommendationAPI:
             csv_path=students_with_tags_csv,
         )
         # Actualizar los embeddings de tags si es necesario
-        embeddings_path = os.path.join(self.data_path, "students_tags_embeddings.pkl")
-        embeddings_path_module = os.path.join(
-            os.path.dirname(base_dir), "src", "embeddings.py"
+        embeddings = self._dynamic_import(
+            "embeddings",
+            os.path.join(os.path.dirname(base_dir), "src", "embeddings.py"),
         )
-        spec_emb = importlib.util.spec_from_file_location(
-            "embeddings", embeddings_path_module
-        )
-        embeddings = importlib.util.module_from_spec(spec_emb)
-        sys.modules["embeddings"] = embeddings
-        spec_emb.loader.exec_module(embeddings)
         import pandas as pd
 
         df_tags = pd.read_csv(students_with_tags_csv)
         # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
-
         return True
 
     def recomendar_top_cursos_para_estudiante(self, estudiante_id, top_n=3):
@@ -230,37 +191,16 @@ class ElectiveRecommendationAPI:
         Devuelve el ranking top_n de cursos recomendados para un estudiante dado su ID,
         usando los embeddings y la similitud coseno.
         """
-        import importlib.util
-        import sys
-        import os
-
-        # Cargar funciones de embeddings y similarity dinámicamente
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        embeddings_path = os.path.join(base_dir, "embeddings.py")
-        similarity_path = os.path.join(base_dir, "similarity.py")
-        recommender_path = os.path.join(base_dir, "recommender.py")
-
-        # embeddings.cargar_embeddings_tags_df
-        spec_emb = importlib.util.spec_from_file_location("embeddings", embeddings_path)
-        embeddings = importlib.util.module_from_spec(spec_emb)
-        sys.modules["embeddings"] = embeddings
-        spec_emb.loader.exec_module(embeddings)
-
-        # similarity.similitud_estudiante_con_todos_los_cursos
-        spec_sim = importlib.util.spec_from_file_location("similarity", similarity_path)
-        similarity = importlib.util.module_from_spec(spec_sim)
-        sys.modules["similarity"] = similarity
-        spec_sim.loader.exec_module(similarity)
-
-        # recommender.ranking_top_cursos_por_similitud
-        spec_rec = importlib.util.spec_from_file_location(
-            "recommender", recommender_path
+        embeddings = self._dynamic_import(
+            "embeddings", os.path.join(base_dir, "embeddings.py")
         )
-        recommender = importlib.util.module_from_spec(spec_rec)
-        sys.modules["recommender"] = recommender
-        spec_rec.loader.exec_module(recommender)
-
-        # Cargar embeddings de estudiantes y cursos
+        similarity = self._dynamic_import(
+            "similarity", os.path.join(base_dir, "similarity.py")
+        )
+        recommender = self._dynamic_import(
+            "recommender", os.path.join(base_dir, "recommender.py")
+        )
         students_emb_path = os.path.join(self.data_path, "students_tags_embeddings.pkl")
         courses_emb_path = os.path.join(self.data_path, "courses_tags_embeddings.pkl")
         df_est = embeddings.cargar_embeddings_tags_df(students_emb_path)
@@ -269,11 +209,9 @@ class ElectiveRecommendationAPI:
             raise ValueError(
                 "No se encontraron los embeddings de estudiantes o cursos."
             )
-        # Calcular similitud
         df_sim = similarity.similitud_estudiante_con_todos_los_cursos(
             df_est, df_cursos, estudiante_id
         )
-        # Ranking top N
         ranking = recommender.ranking_top_cursos_por_similitud(df_sim, top_n=top_n)
         return ranking
 
@@ -282,11 +220,9 @@ class ElectiveRecommendationAPI:
         """Obtiene el siguiente ID incremental para un archivo CSV."""
         next_id = 1
         if os.path.exists(file_path):
-            with open(file_path, mode="r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-                if rows:
-                    next_id = int(rows[-1][id_field]) + 1
+            rows = self._read_csv(file_path)
+            if rows:
+                next_id = int(rows[-1][id_field]) + 1
         return next_id
 
     def _append_row(self, file_path, headers, row):
@@ -304,27 +240,20 @@ class ElectiveRecommendationAPI:
             raise FileNotFoundError(
                 f"El archivo {os.path.basename(file_path)} no existe."
             )
-        rows = []
+        rows = self._read_csv(file_path)
         found = False
-        with open(file_path, mode="r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if str(row[id_field]) == str(row_id):
-                    found = True
-                    for key, value in kwargs.items():
-                        if value is not None:
-                            if key == "nombre" and not value.strip():
-                                raise ValueError(f"El nombre no puede estar vacío.")
-                            # Mapear nombre -> Nombre, tags -> Tags, descripcion -> Descripcion
-                            col = key.capitalize() if key != "tags" else "Tags"
-                            row[col] = value
-                rows.append(row)
+        for row in rows:
+            if str(row[id_field]) == str(row_id):
+                found = True
+                for key, value in kwargs.items():
+                    if value is not None:
+                        if key == "nombre" and not value.strip():
+                            raise ValueError(f"El nombre no puede estar vacío.")
+                        col = key.capitalize() if key != "tags" else "Tags"
+                        row[col] = value
         if not found:
             raise ValueError(f"No se encontró el registro con ID {row_id}.")
-        with open(file_path, mode="w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=headers)
-            writer.writeheader()
-            writer.writerows(rows)
+        self._write_csv(file_path, headers, rows)
 
     def _get_row_by_id(self, file_path, id_field, row_id):
         """Devuelve un diccionario con los campos de una fila por su ID."""
@@ -332,17 +261,27 @@ class ElectiveRecommendationAPI:
             raise FileNotFoundError(
                 f"El archivo {os.path.basename(file_path)} no existe."
             )
-        with open(file_path, mode="r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if str(row[id_field]) == str(row_id):
-                    return row
+        rows = self._read_csv(file_path)
+        for row in rows:
+            if str(row[id_field]) == str(row_id):
+                return row
         raise ValueError(f"No se encontró el registro con ID {row_id}.")
 
     def _get_all_rows(self, file_path):
         """Devuelve una lista de diccionarios con todas las filas de un archivo CSV."""
         if not os.path.exists(file_path):
             return []
+        return self._read_csv(file_path)
+
+    def _read_csv(self, file_path):
+        """Lee un archivo CSV y devuelve una lista de diccionarios."""
         with open(file_path, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             return list(reader)
+
+    def _write_csv(self, file_path, headers, rows):
+        """Escribe una lista de diccionarios en un archivo CSV con los headers dados."""
+        with open(file_path, mode="w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(rows)

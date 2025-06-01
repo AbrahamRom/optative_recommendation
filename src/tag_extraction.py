@@ -108,25 +108,7 @@ def extraer_guardar_tags_curso_por_id(
     i = idx[0]
     df.at[i, "Tags"] = extraer_tags_spacy(df.at[i, columna])[:n_max]
     if csv_path:
-        # Guardar solo la fila modificada en el CSV correspondiente
-        row_to_save = df.loc[[i], ["CursoID", "Tags"]].copy()
-        # Convertir lista de tags a string
-        row_to_save["Tags"] = row_to_save["Tags"].apply(
-            lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
-        )
-        # Leer el CSV original, actualizar solo la fila correspondiente
-        try:
-            df_csv = pd.read_csv(csv_path)
-            idx_csv = df_csv[df_csv["CursoID"] == curso_id].index
-            if len(idx_csv) > 0:
-                df_csv.loc[idx_csv[0], "Tags"] = row_to_save.iloc[0]["Tags"]
-            else:
-                # Si no existe, agregar la fila
-                df_csv = pd.concat([df_csv, row_to_save], ignore_index=True)
-        except Exception:
-            # Si el archivo no existe, crearlo
-            df_csv = row_to_save
-        df_csv.to_csv(csv_path, index=False)
+        _guardar_fila_tags_csv(df, i, "CursoID", curso_id, csv_path)
     return df
 
 
@@ -163,19 +145,28 @@ def extraer_guardar_tags_estudiante_por_id(
         tags.update(extraer_tags_spacy(desc)[:n_max])
     df.at[i, "Tags"] = sorted(list(tags))
     if csv_path:
-        # Guardar solo la fila modificada en el CSV correspondiente
-        row_to_save = df.loc[[i], ["EstudianteID", "Tags"]].copy()
-        row_to_save["Tags"] = row_to_save["Tags"].apply(
-            lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
-        )
-        try:
-            df_csv = pd.read_csv(csv_path)
-            idx_csv = df_csv[df_csv["EstudianteID"] == estudiante_id].index
-            if len(idx_csv) > 0:
-                df_csv.loc[idx_csv[0], "Tags"] = row_to_save.iloc[0]["Tags"]
-            else:
-                df_csv = pd.concat([df_csv, row_to_save], ignore_index=True)
-        except Exception:
-            df_csv = row_to_save
-        df_csv.to_csv(csv_path, index=False)
+        _guardar_fila_tags_csv(df, i, "EstudianteID", estudiante_id, csv_path)
     return df
+
+
+def _guardar_fila_tags_csv(df, idx, id_col, id_value, csv_path):
+    """
+    Guarda solo la fila modificada (curso o estudiante) en el CSV correspondiente.
+    Si existe, actualiza; si no, agrega; si el archivo no existe, lo crea.
+    """
+    import pandas as pd
+
+    row_to_save = df.loc[[idx], [id_col, "Tags"]].copy()
+    row_to_save["Tags"] = row_to_save["Tags"].apply(
+        lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
+    )
+    try:
+        df_csv = pd.read_csv(csv_path)
+        idx_csv = df_csv[df_csv[id_col] == id_value].index
+        if len(idx_csv) > 0:
+            df_csv.loc[idx_csv[0], "Tags"] = row_to_save.iloc[0]["Tags"]
+        else:
+            df_csv = pd.concat([df_csv, row_to_save], ignore_index=True)
+    except Exception:
+        df_csv = row_to_save
+    df_csv.to_csv(csv_path, index=False)
