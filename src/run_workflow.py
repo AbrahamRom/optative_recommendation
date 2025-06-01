@@ -1,24 +1,26 @@
-# import pandas as pd
-# from src.data_preprocessing import cargar_datos_cursos, cargar_datos_estudiantes
-# from src.tag_extraction import (
-#     extraer_tags_cursos_df,
-#     extraer_tags_estudiantes_df,
-#     guardar_tags_cursos_csv,
-#     guardar_tags_estudiantes_csv,
-# )
-# from src.utils import cargar_df_students_with_tags, cargar_df_courses_with_tags
-# from src.embeddings import actualizar_embeddings_si_necesario
-# from src.similarity import calcular_matriz_afinidad
-# from src.recommender import (
-#     recomendar_cursos_para_estudiante,
-#     recomendar_cursos_todos_los_estudiantes,
-# )
+import pandas as pd
+from src.data_preprocessing import cargar_datos_cursos, cargar_datos_estudiantes
+from src.tag_extraction import (
+    extraer_tags_cursos_df,
+    extraer_tags_estudiantes_df,
+    guardar_tags_cursos_csv,
+    guardar_tags_estudiantes_csv,
+)
+from src.utils import cargar_df_students_with_tags, cargar_df_courses_with_tags
+from src.embeddings import actualizar_embeddings_si_necesario
+from src.similarity import calcular_matriz_afinidad
+from src.recommender import (
+    recomendar_cursos_para_estudiante,
+    recomendar_cursos_todos_los_estudiantes,
+)
+from src.tag_ia_suggestion import sugerir_tags_df
 
-# # 1. Preprocesar y extraer tags de cursos
-# print("Preprocesando y extrayendo tags de cursos...")
-# df_cursos_raw = cargar_datos_cursos("data/courses.csv")
-# df_cursos_tags = extraer_tags_cursos_df(df_cursos_raw)
-# guardar_tags_cursos_csv(df_cursos_tags, "data/courses_with_tags.csv")
+# 1. Preprocesar y extraer tags de cursos
+print("Preprocesando y extrayendo tags de cursos...")
+df_cursos_raw = cargar_datos_cursos("data/courses.csv")
+df_cursos_raw = sugerir_tags_df(df_cursos_raw)
+df_cursos_tags = extraer_tags_cursos_df(df_cursos_raw)
+guardar_tags_cursos_csv(df_cursos_tags, "data/courses_with_tags.csv")
 
 # # 2. Preprocesar y extraer tags de estudiantes
 # print("Preprocesando y extrayendo tags de estudiantes...")
@@ -70,4 +72,4 @@
 from .api.elective_recommendation import ElectiveRecommendationAPI
 
 e = ElectiveRecommendationAPI(data_path="data")
-print(e.predefined_tags)
+# print(e.predefined_tags)

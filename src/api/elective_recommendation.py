@@ -136,6 +136,8 @@ class ElectiveRecommendationAPI:
             columna="Descripcion_Limpia",
             n_max=5,
             csv_path=courses_with_tags_csv,
+            nombre_col="Nombre_Limpio",
+            usar_ia=True,
         )
         # Actualizar los embeddings de tags si es necesario
         embeddings = self._dynamic_import(
