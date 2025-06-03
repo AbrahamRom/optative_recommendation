@@ -134,7 +134,7 @@ class ElectiveRecommendationAPI:
             df_curso,
             curso_id,
             columna="Descripcion_Limpia",
-            n_max=5,
+            n_max=10,
             csv_path=courses_with_tags_csv,
             nombre_col="Nombre_Limpio",
             usar_ia=True,
@@ -147,7 +147,8 @@ class ElectiveRecommendationAPI:
         import pandas as pd
 
         df_tags = pd.read_csv(courses_with_tags_csv)
-        # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
+        embeddings_path = os.path.join(self.data_path, "courses_tags_embeddings.pkl")
+        embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
         return True
 
     def recalculate_student_data(self, estudiante_id):
@@ -168,13 +169,14 @@ class ElectiveRecommendationAPI:
         df_estudiante = data_preprocessing.preprocesar_estudiante_por_id(
             students_csv, estudiante_id
         )
+        print(df_estudiante.columns)
         # Extraer y guardar los tags solo para ese estudiante
         tag_extraction.extraer_guardar_tags_estudiante_por_id(
             df_estudiante,
             estudiante_id,
-            tags_col="Tags_Limpio",
+            tags_col="Tags_List",
             desc_col="Descripcion_Limpia",
-            n_max=5,
+            n_max=10,
             csv_path=students_with_tags_csv,
         )
         # Actualizar los embeddings de tags si es necesario
@@ -185,7 +187,8 @@ class ElectiveRecommendationAPI:
         import pandas as pd
 
         df_tags = pd.read_csv(students_with_tags_csv)
-        # embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
+        embeddings_path = os.path.join(self.data_path, "students_tags_embeddings.pkl")
+        embeddings.actualizar_embeddings_si_necesario(df_tags, embeddings_path)
         return True
 
     def recomendar_top_cursos_para_estudiante(self, estudiante_id, top_n=3):

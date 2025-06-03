@@ -1,6 +1,5 @@
 EstudianteID,Nombre,Tags,Descripcion
-1,Ana,"inteligencia artificial, automatizacion, programacion, analisis de datos, machine learning","Me interesa la inteligencia artificial y el aprendizaje automatico. Quiero desarrollar habilidades en programacion y analisis de datos.
-"
+1,Ana,"inteligencia artificial, automatizacion, programacion, analisis de datos, machine learning",Me interesa la inteligencia artificial y el aprendizaje automatico. Quiero desarrollar habilidades en programacion y analisis de datos.
 2,Juan,"redes, ciberseguridad, hardware, administracion de sistemas, seguridad informatica",Me gustan las redes y la ciberseguridad. Me gustaria aprender sobre administracion de sistemas y seguridad.
 3,Lucia,"matematicas, logica, algoritmos, resolucion de problemas, pensamiento logico",Me apasionan las matematicas y la logica. Quiero mejorar mi capacidad de resolucion de problemas.
 4,Pedro,"desarrollo web, diseño, frontend, backend, bases de datos",Me interesa el desarrollo web tanto en frontend como backend. Quiero aprender sobre bases de datos y diseño.
@@ -16,3 +15,4 @@ EstudianteID,Nombre,Tags,Descripcion
 14,Esteban,"blockchain, criptomonedas, seguridad, finanzas, desarrollo de software",Me interesa el blockchain y las criptomonedas. Quiero aprender sobre seguridad y desarrollo de software.
 15,Pepe,"machine learning, big data, ciencia de datos","Me encanta el mundo de la IA, quisiera hacer un chatbot como ChatGPT. Quiero desarrollarlo un poco"
 16,Martí,redes,Me interesaria saber como funciona el internet y las redes de computadoras
+17,Manuel,"algoritmos, resolucion de problemas","Quiero resolver problemas de optimización y satisfacción de restricciones, programar algoritmos eficientes para darles solución"

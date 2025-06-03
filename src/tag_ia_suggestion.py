@@ -47,7 +47,7 @@ def sugerir_tags_descripcion(
     """
     prompt = (
         f"Dada la siguiente información de un curso universitario, sugiere {n_tags} etiquetas (tags) relevantes y concisas "
-        f"(palabras o frases cortas, en español) que resuman los temas principales. Devuelve solo una lista separada por comas.\n\n"
+        f"(palabras o frases cortas, en Español) que resuman los temas principales. Devuelve solo una lista separada por comas.\n\n"
     )
     if nombre:
         prompt += f"Nombre del curso: {nombre}\n"

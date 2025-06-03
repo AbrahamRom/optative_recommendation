@@ -2,6 +2,7 @@
 Módulo de utilidades para embeddings de texto usando Sentence Transformers.
 Incluye funciones para cargar modelos, procesar tags y gestionar embeddings en DataFrames.
 """
+
 import os
 import pickle
 import pandas as pd
@@ -11,28 +12,24 @@ from huggingface_hub import snapshot_download
 # =========================
 # Configuración de modelo
 # =========================
-MODEL_NAME = "sentence-transformers/distiluse-base-multilingual-cased-v1"
-HUGGINGFACE_CACHE_DIR = os.path.join("data", "models", "huggingface_cache")
+MODEL_LOCAL_PATH = os.path.join(
+    "data", "models", "distiluse-base-multilingual-cased-v1"
+)
+
 
 # =========================
 # Carga perezosa del modelo
 # =========================
 def get_sentence_transformer_model():
     """
-    Carga el modelo SentenceTransformer de HuggingFace, descargándolo si es necesario.
-    Utiliza caché local para evitar descargas repetidas.
+    Carga el modelo SentenceTransformer desde una carpeta local.
     """
     if not hasattr(get_sentence_transformer_model, "_model"):
-        os.makedirs(HUGGINGFACE_CACHE_DIR, exist_ok=True)
-        local_model_path = snapshot_download(
-            repo_id=MODEL_NAME,
-            cache_dir=HUGGINGFACE_CACHE_DIR,
-        )
         from sentence_transformers import SentenceTransformer
-        get_sentence_transformer_model._model = SentenceTransformer(
-            local_model_path, local_files_only=True
-        )
+
+        get_sentence_transformer_model._model = SentenceTransformer(MODEL_LOCAL_PATH)
     return get_sentence_transformer_model._model
+
 
 # =========================
 # Procesamiento de tags
@@ -52,6 +49,7 @@ def convertir_tags_a_lista(tags):
         else:
             return [tag.strip() for tag in tags.split(",") if tag.strip()]
     return []
+
 
 # =========================
 # Embeddings de tags
@@ -82,8 +80,11 @@ def obtener_embeddings_tags_df(df, tags_col="Tags", model=None):
         model = get_sentence_transformer_model()
     df = df.copy()
     df[tags_col] = df[tags_col].apply(convertir_tags_a_lista)
-    df["Tags_Embedding"] = df[tags_col].apply(lambda tags: obtener_embeddings_tags(tags, model))
+    df["Tags_Embedding"] = df[tags_col].apply(
+        lambda tags: obtener_embeddings_tags(tags, model)
+    )
     return df
+
 
 # =========================
 # Guardado y carga de embeddings
@@ -95,12 +96,14 @@ def guardar_embeddings_courses_df(df, path="data/courses_tags_embeddings.pkl"):
     df[["CursoID", "Tags", "Tags_Embedding"]].to_pickle(path)
     return path
 
+
 def guardar_embeddings_estudiantes_df(df, path="data/students_tags_embeddings.pkl"):
     """
     Guarda el DataFrame de estudiantes con la columna 'Tags_Embedding' en un archivo pickle.
     """
     df[["EstudianteID", "Tags", "Tags_Embedding"]].to_pickle(path)
     return path
+
 
 def cargar_embeddings_tags_df(path="data/courses_tags_embeddings.pkl"):
     """
@@ -109,6 +112,7 @@ def cargar_embeddings_tags_df(path="data/courses_tags_embeddings.pkl"):
     if os.path.exists(path):
         return pd.read_pickle(path)
     return None
+
 
 # =========================
 # Actualización inteligente de embeddings

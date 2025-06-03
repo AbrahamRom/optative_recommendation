@@ -2,8 +2,21 @@
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
+import importlib.util
+import os
 
 nlp = spacy.load("es_core_news_sm")
+
+# Importar limpiar_texto de data_preprocessing.py solo una vez
+data_preprocessing_path = os.path.join(
+    os.path.dirname(__file__), "data_preprocessing.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "data_preprocessing", data_preprocessing_path
+)
+data_preprocessing = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(data_preprocessing)
+limpiar_texto = data_preprocessing.limpiar_texto
 
 
 def extraer_tags_spacy(texto):
@@ -137,6 +150,7 @@ def extraer_guardar_tags_curso_por_id(
     import importlib.util
     import sys
     import os
+
     try:
         from src.tag_ia_suggestion import sugerir_tags_descripcion
     except ModuleNotFoundError:
@@ -156,9 +170,7 @@ def extraer_guardar_tags_curso_por_id(
     nombre = df.at[i, nombre_col] if nombre_col in df.columns else None
     ia_tags = []
     if usar_ia:
-        ia_tags = sugerir_tags_descripcion(
-            df.at[i, columna], nombre=nombre, n_tags=n_max
-        )
+        ia_tags = sugerir_tags_descripcion(df.at[i, columna], nombre=nombre, n_tags=3)
     spacy_tags = extraer_tags_spacy(df.at[i, columna])[:n_max]
     # IA tags primero, luego los de spaCy que no estén ya
     tags = ia_tags + [tag for tag in spacy_tags if tag not in ia_tags]
@@ -199,7 +211,9 @@ def extraer_guardar_tags_estudiante_por_id(
         )
     if isinstance(desc, str) and desc.strip():
         tags.update(extraer_tags_spacy(desc)[:n_max])
-    df.at[i, "Tags"] = sorted(list(tags))
+    # Limpiar los tags antes de asignar
+    df.at[i, "Tags"] = sorted([limpiar_texto(t) for t in tags])
+    print(f"Tags extraídos para el estudiante {estudiante_id}: {df.at[i, 'Tags']}")
     if csv_path:
         _guardar_fila_tags_csv(df, i, "EstudianteID", estudiante_id, csv_path)
     return df

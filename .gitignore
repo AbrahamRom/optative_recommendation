@@ -10,3 +10,4 @@ src/__pycache__/tag_extraction.cpython-312.pyc
 src/.env
 *.pyc
 /src/__pycache__
+/models/all-MiniLM-L6-v2

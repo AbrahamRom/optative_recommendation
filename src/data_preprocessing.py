@@ -91,6 +91,8 @@ def preprocesar_estudiante_por_id(path, estudiante_id):
     i = idx[0]
     df.at[i, "Tags_Limpio"] = df.at[i, "Tags"]
     df.at[i, "Descripcion_Limpia"] = limpiar_texto(df.at[i, "Descripcion"])
-    df.at[i, "Tags_List"] = [tag.strip() for tag in str(df.at[i, "Tags_Limpio"]).split(",") if tag.strip()]
+    df.at[i, "Tags_List"] = [
+        tag.strip() for tag in str(df.at[i, "Tags_Limpio"]).split(",") if tag.strip()
+    ]
+    print(df.at[i, "Tags_List"])
     return df
-
