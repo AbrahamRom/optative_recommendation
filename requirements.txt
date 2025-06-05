@@ -4,3 +4,6 @@ sentence-transformers
 spacy
 flask
 streamlit
+dotenv
+requests
+huggingface-hub

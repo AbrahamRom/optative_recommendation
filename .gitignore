@@ -11,3 +11,8 @@ src/.env
 *.pyc
 /src/__pycache__
 /models/all-MiniLM-L6-v2
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz

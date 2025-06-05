@@ -1,6 +1,5 @@
 # Extracción automática de tags usando NLP
 import spacy
-from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import importlib.util
 import os
