@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{geometry}
 \geometry{a4paper, margin=2.5cm}
+\usepackage{graphicx}
 \title{Sistema de Recomendación de Optativas Universitarias}
 \author{Proyecto para Modelos Matemáticos Aplicados}
 \date{Junio 2025}
@@ -200,6 +201,75 @@ Estos casos de uso cubren los principales flujos de interacción previstos en la
         \item huggingface-hub
     \end{itemize}
     \item Acceso a internet para usar la API de OpenRouter (opcional, solo para sugerencia automática de tags)
+\end{itemize}
+
+
+
+\section{Validación Experimental}
+
+La validación experimental del sistema se estructura en torno a los siguientes aspectos clave: extracción de etiquetas (tags) y recomendaciones personalizadas.
+
+\subsection{Extracción de Tags}
+
+\textbf{Ejemplo de Cursos:}
+
+\begin{itemize}
+    \item \textbf{Curso:} Inteligencia Artificial\\
+    \textbf{Descripción:} Introducción a los conceptos y técnicas de IA, aprendizaje automático, redes neuronales y aplicaciones.\\
+    \textbf{Tags extraídos (NLP):} aprendizaje, red, inteligencia, aplicación, concepto\\
+    \textbf{Tags IA (LLM):} inteligencia artificial, machine learning, redes neuronales, automatización, aprendizaje automático
+
+    \item \textbf{Curso:} Criptografía\\
+    \textbf{Descripción:} Este curso explora los principios matemáticos detrás de la criptografía moderna, incluyendo algoritmos de cifrado, funciones hash y protocolos de seguridad.\\
+    \textbf{Tags extraídos (NLP):} criptografia, algoritmo cifrado, algoritmo, cifrado, función, hash, protocolo, seguridad\\
+    \textbf{Tags IA (LLM):} criptografía, seguridad, cifrado, funciones hash, protocolos
+\end{itemize}
+
+\subsection{Ejemplo de Estudiantes}
+
+\begin{itemize}
+    \item \textbf{Estudiante:} Valentina\\
+    \textbf{Descripción:} Me apasiona el big data y la ciencia de datos. Quiero mejorar mis habilidades en estadística y visualización.\\
+    \textbf{Intereses:} big data, analisis de datos, estadistica, visualizacion, ciencia de datos\\
+    \textbf{Tags extraídos:} analisis de dato, big, big datar, ciencia, ciencia de dato, data, dato, estadistica, estadisticar, visualizacion
+
+    \item \textbf{Estudiante:} Martí\\
+    \textbf{Descripción:} Me interesaría saber cómo funciona el internet y las redes de computadoras.\\
+    \textbf{Intereses:} redes\\
+    \textbf{Tags extraídos:} computadora, internet, red
+\end{itemize}
+
+\subsection{Recomendación}
+
+%\textbf{Matriz de Similitud Coseno:}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{recomendaciones.png}
+\end{center}
+
+\textbf{Top Recomendaciones para Estudiantes:}
+
+\begin{itemize}
+    \item \textbf{Estudiante:} Valentina\\
+    \textbf{Cursos recomendados:}
+    \begin{enumerate}
+        \item Matemática Discreta (ID: 3) -- Score: 0.809\\
+        Lógica, conjuntos, grafos y combinatoria para ciencias de la computación.
+        \item Base de Datos (ID: 5) -- Score: 0.782\\
+        Modelado, diseño y administración de bases de datos relacionales y no relacionales.
+        \item Optimización (ID: 8) -- Score: 0.763\\
+        Este curso se enfoca en técnicas para encontrar el mejor resultado en problemas matemáticos, como programación lineal y no lineal, algoritmos genéticos y optimización convexa.
+    \end{enumerate}
+
+    \item \textbf{Estudiante:} Martí\\
+    \textbf{Cursos recomendados:}
+    \begin{enumerate}
+        \item Redes de Computadoras (ID: 2) -- Score: 0.838\\
+        Estudio de protocolos, arquitecturas y seguridad en redes de computadoras.
+        \item Inteligencia Artificial (ID: 1) -- Score: 0.712\\
+        Introducción a los conceptos y técnicas de IA, aprendizaje automático, redes neuronales y aplicaciones.
+        \item Matemática Discreta (ID: 3) -- Score: 0.698\\
+        Lógica, conjuntos, grafos y combinatoria para ciencias de la computación.
+    \end{enumerate}
 \end{itemize}
 
 \section{Créditos}

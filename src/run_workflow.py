@@ -12,21 +12,22 @@ from src.similarity import calcular_matriz_afinidad
 from src.recommender import (
     recomendar_cursos_para_estudiante,
     recomendar_cursos_todos_los_estudiantes,
+    guardar_matrices_iteracion,
 )
 from src.tag_ia_suggestion import sugerir_tags_df
 
-# # 1. Preprocesar y extraer tags de cursos
-# print("Preprocesando y extrayendo tags de cursos...")
-# df_cursos_raw = cargar_datos_cursos("data/courses.csv")
-# df_cursos_raw = sugerir_tags_df(df_cursos_raw)
-# df_cursos_tags = extraer_tags_cursos_df(df_cursos_raw)
-# guardar_tags_cursos_csv(df_cursos_tags, "data/courses_with_tags.csv")
+# 1. Preprocesar y extraer tags de cursos
+print("Preprocesando y extrayendo tags de cursos...")
+df_cursos_raw = cargar_datos_cursos("data/courses.csv")
+df_cursos_raw = sugerir_tags_df(df_cursos_raw)
+df_cursos_tags = extraer_tags_cursos_df(df_cursos_raw)
+guardar_tags_cursos_csv(df_cursos_tags, "data/courses_with_tags.csv")
 
-# # 2. Preprocesar y extraer tags de estudiantes
-# print("Preprocesando y extrayendo tags de estudiantes...")
-# df_estudiantes_raw = cargar_datos_estudiantes("data/students.csv")
-# df_estudiantes_tags = extraer_tags_estudiantes_df(df_estudiantes_raw)
-# guardar_tags_estudiantes_csv(df_estudiantes_tags, "data/students_with_tags.csv")
+# 2. Preprocesar y extraer tags de estudiantes
+print("Preprocesando y extrayendo tags de estudiantes...")
+df_estudiantes_raw = cargar_datos_estudiantes("data/students.csv")
+df_estudiantes_tags = extraer_tags_estudiantes_df(df_estudiantes_raw)
+guardar_tags_estudiantes_csv(df_estudiantes_tags, "data/students_with_tags.csv")
 
 # 3. Cargar los datos de estudiantes y cursos con tags (ya limpios)
 print("Cargando datos con tags...")
@@ -68,6 +69,9 @@ for est_id, recs in todas_recomendaciones.items():
     print(
         f"Estudiante {est_id}: {[f'CursoID {cid} (score {s:.3f})' for cid, s in recs]}"
     )
+
+# Guardar la matriz de afinidad y la matriz de similitud coseno (afinidad) en la carpeta de experimentos
+guardar_matrices_iteracion(matriz_afinidad, matriz_afinidad, iteracion=1)
 
 # from .api.elective_recommendation import ElectiveRecommendationAPI
 

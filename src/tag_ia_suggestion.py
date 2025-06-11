@@ -46,8 +46,8 @@ def sugerir_tags_descripcion(
     Devuelve una lista de tags sugeridos, limpios y lematizados.
     """
     prompt = (
-        f"Dada la siguiente información de un curso universitario, sugiere {n_tags} etiquetas (tags) relevantes y concisas "
-        f"(palabras o frases cortas, en Español) que resuman los temas principales. Devuelve solo una lista separada por comas.\n\n"
+        f"Dada la siguiente información de un curso universitario, sugiere como máximo {n_tags} etiquetas (tags) relevantes y concisas "
+        f"(palabras en Español) que resuman los temas principales, no uses las mismas palabras de la descripción. Devuelve solo una lista separada por comas.\n\n"
     )
     if nombre:
         prompt += f"Nombre del curso: {nombre}\n"
@@ -79,7 +79,7 @@ def sugerir_tags_descripcion(
             for lema in lemas:
                 if lema.strip():
                     tags_limpios.append(lema)
-        # print(f"Tags sugeridos: {tags_limpios}")
+        print(f"Tags sugeridos: {tags_limpios}")
         # Quitar duplicados y limitar a n_tags
         tags_final = []
         for t in tags_limpios:

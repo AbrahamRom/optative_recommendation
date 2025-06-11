@@ -32,7 +32,7 @@ def extraer_tags_spacy(texto):
 
 
 def extraer_tags_cursos_df(
-    df, columna="Descripcion_Limpia", n_max=5, ia_tags_col="Tags_IA"
+    df, columna="Descripcion_Limpia", n_max=10, ia_tags_col="Tags_IA"
 ):
     """
     Extrae tags de la columna de descripciones limpias de un DataFrame de cursos
@@ -61,6 +61,8 @@ def extraer_tags_cursos_df(
         spacy_tags = extraer_tags_spacy(row[columna])[:n_max]
         # IA tags primero, luego los de spaCy que no estén ya
         tags = ia_tags_final + [tag for tag in spacy_tags if tag not in ia_tags_final]
+        # print(f"Tags extraídos para el curso {row['CursoID']}:")
+        # print(tags)
         return tags[:n_max]
 
     df["Tags"] = df.apply(combinar_tags, axis=1)
@@ -71,11 +73,16 @@ def guardar_tags_cursos_csv(df, path="data/courses_with_tags.csv"):
     """
     Guarda solo CursoID y Tags en un archivo CSV.
     Convierte la lista de tags a una cadena separada por comas para guardar en el CSV.
+    Elimina tags vacíos y espacios extra antes de guardar.
     """
     df_copy = df.copy()
     if "Tags" in df_copy.columns:
         df_copy["Tags"] = df_copy["Tags"].apply(
-            lambda tags: ", ".join(tags) if isinstance(tags, list) else ""
+            lambda tags: (
+                ", ".join([t.strip() for t in tags if isinstance(t, str) and t.strip()])
+                if isinstance(tags, list)
+                else ""
+            )
         )
     # Solo guarda las columnas necesarias
     df_copy = df_copy[["CursoID", "Tags"]]

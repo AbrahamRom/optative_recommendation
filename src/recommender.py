@@ -34,3 +34,21 @@ def ranking_top_cursos_por_similitud(df_similitud, top_n=3):
     """
     top = df_similitud.sort_values("Similitud", ascending=False).head(top_n)
     return list(zip(top["CursoID"], top["Similitud"]))
+
+
+def guardar_matrices_iteracion(
+    matriz_preferencias, matriz_similitud, iteracion, ruta_salida="experimentos"
+):
+    """
+    Guarda la matriz de preferencias y la matriz de similitud coseno en archivos CSV para una iteración dada.
+    Los archivos se nombran como preferencias_iter_{iteracion}.csv y similitud_iter_{iteracion}.csv
+    Se guardan en la carpeta 'experimentos' por defecto.
+    """
+    import os
+
+    os.makedirs(ruta_salida, exist_ok=True)
+    preferencias_path = f"{ruta_salida}/preferencias_iter_{iteracion}.csv"
+    similitud_path = f"{ruta_salida}/similitud_iter_{iteracion}.csv"
+    matriz_preferencias.to_csv(preferencias_path)
+    matriz_similitud.to_csv(similitud_path)
+    print(f"Matrices guardadas: {preferencias_path}, {similitud_path}")
