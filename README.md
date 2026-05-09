@@ -1,62 +1,89 @@
-# Proyecto de recomendación de optativas universitarias
+# 🎓 Sistema de Recomendación de Optativas Universitarias
 
-Este proyecto es un sistema inteligente que recomienda asignaturas optativas a estudiantes universitarios utilizando técnicas de Procesamiento de Lenguaje Natural (NLP), extracción de etiquetas (tags), generación de embeddings semánticos y modelos de lenguaje (LLM). El objetivo es ayudar a los estudiantes a descubrir y elegir las optativas más alineadas con sus intereses, habilidades y objetivos académicos.
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
+![NLP](https://img.shields.io/badge/NLP-spaCy%20%7C%20HuggingFace-green)
+![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 
-## Estructura de carpetas
-
-- **data/**: Datos de cursos y estudiantes, embeddings y tags generados.
-- **src/**: Código fuente principal (preprocesamiento, extracción de tags, embeddings, recomendación, etc.).
-- **app/**: Interfaz de usuario basada en Streamlit para interacción con estudiantes y docentes.
-- **README.md**: Documentación general y guía de uso del proyecto.
-- **documentation/**: Documentación formal en formato LaTeX.
-
-## ¿Cómo funciona?
-
-1. **Preprocesamiento**: Limpieza y normalización de textos de estudiantes y cursos.
-2. **Extracción de tags**: Se extraen palabras clave de las descripciones usando spaCy y/o sugerencias automáticas por IA (OpenRouter/mistral-7b-instruct).
-3. **Embeddings**: Se generan vectores semánticos para los tags de estudiantes y cursos usando modelos como `distiluse-base-multilingual-cased-v1`.
-4. **Cálculo de similitud**: Se calcula la similitud coseno entre los embeddings de estudiantes y cursos.
-5. **Recomendación**: Se rankean los cursos para cada estudiante según la similitud y se muestran los más relevantes.
-
-## Principales funcionalidades
-
-- **Preprocesamiento de datos**: Limpieza y normalización de textos.
-- **Extracción de tags**: Usando spaCy y sugerencias automáticas por IA (LLM, vía OpenRouter/mistral-7b-instruct:free).
-- **Embeddings**: Generación de vectores semánticos para tags y descripciones.
-- **Cálculo de similitud**: Matching estudiante-curso usando similitud coseno.
-- **Recomendación**: Ranking de cursos personalizados para cada estudiante.
-
-## Ejecución rápida
-
-Puedes ejecutar el flujo completo desde `src/run_workflow.py` para procesar datos, extraer tags, generar embeddings y calcular recomendaciones.
-
-## Cómo empezar
-
-1. Instala las dependencias:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Crea un archivo `.env` en la raíz con tu clave de OpenRouter si quieres usar sugerencia de tags por IA:
-
-   ```env
-   OPENROUTER_API_KEY=tu-api-key-aqui
-   ```
-
-3. Explora y edita los datos en `data/`
-4. Ejecuta la lógica principal desde `src/` o la app desde `app/`
-
-## Requisitos
-
-- Python 3.8+
-- Dependencias en `requirements.txt`
-- Acceso a internet para usar la API de OpenRouter (opcional, solo para tags IA)
-
-## Créditos
-
-Desarrollado para la asignatura de Modelos Matemáticos Aplicados.
+Este proyecto es un sistema inteligente diseñado para recomendar asignaturas optativas a estudiantes universitarios. Utiliza técnicas avanzadas de **Procesamiento de Lenguaje Natural (NLP)**, extracción de etiquetas (tags) generadas por IA y modelos de embeddings semánticos para conectar el perfil e intereses del estudiante con los cursos ideales.
 
 ---
 
-¿Dudas? Consulta los scripts en `src/` o abre un issue.
+## 🚀 Características Principales y Flujo de Trabajo
+
+El sistema opera bajo un pipeline (flujo) de 5 etapas principales:
+
+1. **Preprocesamiento**: Limpieza y normalización de los textos descriptivos de estudiantes y cursos.
+2. **Extracción de Tags**: Detección de palabras clave utilizando `spaCy` y generación de sugerencias automáticas mediante IA (LLM a través de OpenRouter/mistral-7b-instruct).
+3. **Generación de Embeddings**: Transformación de las etiquetas en vectores semánticos empleando modelos preentrenados como `distiluse-base-multilingual-cased-v1`.
+4. **Cálculo de Similitud**: Evaluación del grado de compatibilidad (matching) entre estudiante y curso utilizando la métrica de **similitud coseno**.
+5. **Motor de Recomendación**: Generación de un ranking personalizado que muestra los cursos más relevantes para cada alumno.
+
+---
+
+## 📂 Estructura del Proyecto
+
+El repositorio está organizado de la siguiente manera:
+
+- `data/`: Contiene los conjuntos de datos de cursos y estudiantes, así como los embeddings y tags generados.
+- `src/`: Código fuente principal (lógica de preprocesamiento, extracción de tags, embeddings y recomendación).
+- `app/`: Interfaz de usuario interactiva desarrollada en **Streamlit** para estudiantes y docentes.
+- `documentation/`: Documentación formal del proyecto en formato LaTeX.
+
+---
+
+## 🛠️ Cómo Empezar (Instalación)
+
+Sigue estos pasos para ejecutar el proyecto en tu máquina local:
+
+### 1. Clonar el repositorio y preparar el entorno
+Es muy recomendable utilizar un entorno virtual para no tener conflictos de dependencias.
+
+```bash
+git clone https://github.com/AbrahamRom/optative_recommendation.git
+cd optative_recommendation
+
+# Crear entorno virtual (opcional pero recomendado)
+python -m venv venv
+# Activar entorno (Linux/macOS)
+source venv/bin/activate
+# Activar entorno (Windows)
+venv\Scripts\activate
+```
+
+### 2. Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configurar variables de entorno
+Si deseas utilizar la extracción de tags impulsada por inteligencia artificial, crea un archivo `.env` en la raíz del proyecto y añade tu clave de OpenRouter:
+
+```env
+OPENROUTER_API_KEY=tu-api-key-aqui
+```
+
+---
+
+## 💻 Uso y Ejecución
+
+Puedes utilizar el proyecto de dos formas principales:
+
+### Ejecutar el Pipeline (Backend)
+Para procesar los datos, extraer tags, generar los embeddings y calcular las recomendaciones por consola, ejecuta:
+```bash
+python src/run_workflow.py
+```
+
+### Ejecutar la Interfaz Gráfica (Frontend)
+Para iniciar la interfaz web interactiva basada en Streamlit:
+```bash
+streamlit run app/main.py
+```
+*(Asegúrate de apuntar al archivo principal correcto dentro de la carpeta `app/` si tiene otro nombre).*
+
+---
+
+## 📝 Créditos y Notas
+
+* Proyecto desarrollado para la asignatura de **Modelos Matemáticos Aplicados**.
+* Para cualquier duda o problema, puedes explorar los scripts en la carpeta `src/` o [abrir un Issue](../../issues) en este repositorio.
